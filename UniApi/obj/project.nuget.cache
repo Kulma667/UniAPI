@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "xgRTDwhEV9Sd7cMEenqUdYuMAOLPteO5KUaa7QoH9kypWo053KVAkpfZkZ3cLRUagn7P8540H8Kdxq7iWetDgA==",
+  "dgSpecHash": "XBtK8+mMJuv8eECnUDpbUj5pglndeq+wt6gLS2Ml8Ub+Ljbl3q/lApnxTrm5PYw6pFZsnqSsfBPKyJ28V2Lybg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\t.kulmagambetov\\source\\repos\\UniApi\\UniApi\\UniApi.csproj",
+  "projectFilePath": "C:\\Users\\t.kulmagambetov\\source\\UniAPI\\UniApi\\UniApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\t.kulmagambetov\\.nuget\\packages\\microsoft.entityframeworkcore\\7.0.11\\microsoft.entityframeworkcore.7.0.11.nupkg.sha512",
     "C:\\Users\\t.kulmagambetov\\.nuget\\packages\\microsoft.entityframeworkcore.abstractions\\7.0.11\\microsoft.entityframeworkcore.abstractions.7.0.11.nupkg.sha512",

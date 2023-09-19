@@ -825,11 +825,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\t.kulmagambetov\\source\\repos\\UniApi\\UniApi\\UniApi.csproj",
+      "projectUniqueName": "C:\\Users\\t.kulmagambetov\\source\\UniAPI\\UniApi\\UniApi.csproj",
       "projectName": "UniApi",
-      "projectPath": "C:\\Users\\t.kulmagambetov\\source\\repos\\UniApi\\UniApi\\UniApi.csproj",
+      "projectPath": "C:\\Users\\t.kulmagambetov\\source\\UniAPI\\UniApi\\UniApi.csproj",
       "packagesPath": "C:\\Users\\t.kulmagambetov\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\t.kulmagambetov\\source\\repos\\UniApi\\UniApi\\obj\\",
+      "outputPath": "C:\\Users\\t.kulmagambetov\\source\\UniAPI\\UniApi\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
