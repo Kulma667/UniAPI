@@ -80,5 +80,49 @@ namespace UniApi.Models
             }
             return students;
         }
+        public List<SuperUsers> Login(string Login, string Password)
+        {
+            List<SuperUsers> students = new List<SuperUsers>();
+            using (var cnn = new SqlConnection("workstation id=Students.mssql.somee.com;packet size=4096;user id=UIBStudent_SQLLogin_1;pwd=5255t2awd1;data source=Students.mssql.somee.com;persist security info=False;initial catalog=Students"))
+            {
+                students = cnn.Query<SuperUsers>("dbo.GetUser",
+                    new { Name=Login , Password },
+                    commandType: System.Data.CommandType.StoredProcedure).ToList();
+            }
+            return students;
+        }
+        public string CreateToken(string Token, DateTime CreatedOn)
+        {
+            List<dynamic> createdToken = new List<dynamic>();
+            using (var cnn = new SqlConnection("workstation id=Students.mssql.somee.com;packet size=4096;user id=UIBStudent_SQLLogin_1;pwd=5255t2awd1;data source=Students.mssql.somee.com;persist security info=False;initial catalog=Students"))
+            {
+                createdToken = cnn.Query<dynamic>("dbo.CreateToken",
+                    new { Token, CreatedOn},
+                    commandType: System.Data.CommandType.StoredProcedure).ToList();
+            }
+            return JsonConvert.SerializeObject($"Created:\r\n {JsonConvert.SerializeObject(createdToken)}");
+        }
+        public string DeleteToken(string Token, DateTime CreatedOn)
+        {
+            List<dynamic> deletedToken = new List<dynamic>();
+            using (var cnn = new SqlConnection("workstation id=Students.mssql.somee.com;packet size=4096;user id=UIBStudent_SQLLogin_1;pwd=5255t2awd1;data source=Students.mssql.somee.com;persist security info=False;initial catalog=Students"))
+            {
+                deletedToken = cnn.Query<dynamic>("dbo.DeleteToken",
+                    new { Token, CreatedOn },
+                    commandType: System.Data.CommandType.StoredProcedure).ToList();
+            }
+            return JsonConvert.SerializeObject($"Deleted:\r\n {JsonConvert.SerializeObject(deletedToken)}");
+        }
+        public string GetToken(string token)
+        {
+            List<dynamic> result = new List<dynamic>();
+            using (var cnn = new SqlConnection("workstation id=Students.mssql.somee.com;packet size=4096;user id=UIBStudent_SQLLogin_1;pwd=5255t2awd1;data source=Students.mssql.somee.com;persist security info=False;initial catalog=Students"))
+            {
+                result = cnn.Query<dynamic>("dbo.GetToken",
+                    new { Token = token },
+                    commandType: System.Data.CommandType.StoredProcedure).ToList();
+            }
+            return JsonConvert.SerializeObject(result);
+        }
     }
 }

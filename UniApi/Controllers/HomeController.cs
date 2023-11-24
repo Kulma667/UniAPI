@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UniApi.Models;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -29,6 +30,7 @@ namespace UniApi.Controllers
             string Name = "";
             string Sex = "";
             string ReqAction = "";
+            string token = "";
  
             foreach (var parameter in InputData)
             {
@@ -52,93 +54,139 @@ namespace UniApi.Controllers
                     case "sex":
                         Sex = parameter.Value;
                         break;
+                    case "token":
+                        token = parameter.Value;
+                        break;
                 }
             }
             switch (ReqAction)
             {
                 case "GetUsers":
-                    return GetUsers();
+                    return GetUsers(token);
                 case "GetUser":
                     return GetUser(Convert.ToInt32(Id));
                 case "CreateUser":
-                    return CreateUser(Convert.ToInt32(Id), Name, Email, Password, Sex);
+                    return CreateUser(Convert.ToInt32(Id), Name, Email, Password, Sex, token);
                 case "ChangePassword":
-                    return ChangePassword(Convert.ToInt32(Id), Password);
+                    return ChangePassword(Convert.ToInt32(Id), Password, token);
                 default:
-                    return ReqAction;
+                    return "Undefinded action";
             }
-            return "";
         }
         private readonly Repository repo = new Repository();
-        public string GetUsers()
+        public string GetUsers(string token)
         {
-            string students = JsonConvert.SerializeObject(repo.GetStudents());
-            return students;
+            string result = VerifyToken(token);
+            if (JsonConvert.DeserializeObject<dynamic>(result) == "OK")
+            {
+                string students = JsonConvert.SerializeObject(repo.GetStudents());
+                return students;
+            }
+            return result;
         }
-        public string GetUser(int Id) 
+            public string GetUser(int Id) 
         {
             string students = JsonConvert.SerializeObject(repo.GetStudent(Id));
             return students;
         }
-        public string CreateUser(int Id, string Name, string Email, string Password, string Sex) 
+        public string CreateUser(int Id, string Name, string Email, string Password, string Sex, string token) 
         {
-            bool sexual_identity = true;
-            if (Sex.Contains("Boy") || Sex.Contains("Girl"))
+            string result = VerifyToken(token);
+            if (JsonConvert.DeserializeObject<dynamic>(result) == "OK")
             {
-                if (Sex.Contains("Girl"))
+                bool sexual_identity = true;
+                if (Sex.Contains("Boy") || Sex.Contains("Girl"))
                 {
-                    sexual_identity = false;
+                    if (Sex.Contains("Girl"))
+                    {
+                        sexual_identity = false;
+                    }
+                    else if (Sex.Contains("Boy"))
+                    {
+                        sexual_identity = true;
+                    }
+                    if (repo.GetStudents().Count == Id)
+                    {
+                        return JsonConvert.SerializeObject("Error 302: Set Another Id");
+                    }
+                    else if (repo.GetStudent(Id).Count == 1)
+                    {
+                        return JsonConvert.SerializeObject("Error 303: This Id already exists");
+                    }
+                    string students = JsonConvert.SerializeObject(repo.CreateStudent(Id, Name, Email, Password, sexual_identity));
+                    return $"Succsess! Student Named {Name} created";
                 }
-                else if (Sex.Contains("Boy"))
+                else
                 {
-                    sexual_identity = true;
-                }   
-            if (repo.GetStudents().Count == Id)  
-            {
-                return JsonConvert.SerializeObject("Error 302: Set Another Id");
-            }
-            else if (repo.GetStudent(Id).Count == 1)
-                {
-                    return JsonConvert.SerializeObject("Error 303: This Id already exists"); 
+                    return JsonConvert.SerializeObject("Error -301:Set Sex to Value that equals to = Boy or Girl");
                 }
-            string students = JsonConvert.SerializeObject(repo.CreateStudent(Id, Name, Email, Password, sexual_identity));
-            return $"Succsess! Student Named {Name} created";
             }
-            else
+            else 
             {
-                return JsonConvert.SerializeObject("Error -301:Set Sex to Value that equals to = Boy or Girl");
+                return result;
             }
         }
-        public string GetPassword(int Id)
+        public string GetPassword(int Id, string token)
         {
-            string students = JsonConvert.SerializeObject(repo.GetPass(Id));
-
-            return students;
-        }
-        public string ChangePassword(int Id , string Password)
-        {
-            string students = repo.ChangePassword(Id, Password);
-
-            return students;
-        }
-
-        public string hasher256(string Password, string Key) 
-        {
-            string resulthash = ""; 
-            Key = "";
-            using (SHA256 sha256 = SHA256.Create())
+            string result = VerifyToken(token);
+            if (JsonConvert.DeserializeObject<dynamic>(result) == "OK")
             {
-                byte[] inputBytes = Encoding.UTF8.GetBytes(Password + Key);
-                byte[] hashBytes = sha256.ComputeHash(inputBytes);
-                string hashString = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
-                resulthash = hashString;
+                string students = JsonConvert.SerializeObject(repo.GetPass(Id));
+                return students;
             }
-            return JsonConvert.SerializeObject(resulthash);
+            return JsonConvert.SerializeObject("Error -201: Invalid Token");
         }
-        public string VerifyHash(string hashString) 
+        public string ChangePassword(int Id , string Password, string token)
         {
-            string originalString = ""; //получать праоль из базы и бить ее в хешер для верифая
-            return JsonConvert.SerializeObject(originalString);
+            string result = VerifyToken(token);
+            if (JsonConvert.DeserializeObject<dynamic>(result) == "OK")
+            {
+                string students = repo.ChangePassword(Id, Password);
+                return students;
+            }
+            return result;
+        }
+        public string Token(string Login,string Password) 
+        {
+            if (repo.Login(Login, Password).Count == 1)
+            {
+                string result = "";
+                result = StringToBase64(Login + "," + Password);
+                repo.CreateToken(result, DateTime.Now);
+                return JsonConvert.SerializeObject(result);
+            }
+            else 
+            {
+                return "Неверный логин или пароль";
+            }
+        }
+        static string StringToBase64(string originalString)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(originalString);
+            return Convert.ToBase64String(bytes);
+        }
+        public string VerifyToken(string token) 
+        {
+            byte[] bytes = Convert.FromBase64String(token);
+            string originalString = Encoding.UTF8.GetString(bytes);
+            string[] data = originalString.Split(",");
+            if (repo.Login(data[0], data[1]).Count == 1)
+            {
+                return JsonConvert.SerializeObject("OK");
+            }
+            return JsonConvert.SerializeObject("Error:403, LOL u are wrong");
+        }
+        //public string Login(string Login, string Password) 
+        //{
+        //    if (repo.Login(Login , Password).Count == 1)
+        //    {
+        //        return "";
+        //    }
+        //    return "";
+        //}
+        public void TokenLife() 
+        {
+            
         }
     }
 }
